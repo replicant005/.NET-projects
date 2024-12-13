@@ -1,0 +1,180 @@
+﻿@* 
+   Author - mehak kapur 
+   Date - 7/12/2024
+   Description : Blazor application for .NET assignment, it a personlity tester, which asks user some questions and generates a personality type
+*@
+ 
+
+
+@page "/"
+@rendermode InteractiveServer
+
+<PageTitle>Personality Test</PageTitle>
+
+<style>
+    body {
+        background-color: #CC5500;
+        font-family: Arial, sans-serif;
+        color: #FFFFFF;
+        margin: 0;
+        padding: 0;
+    }
+
+    h1 {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 2.5em;
+    }
+
+    h3 {
+        text-align: center;
+        font-size: 1.5em;
+        margin-bottom: 30px;
+    }
+    /* this block of code is taken from claude 3.5  */
+    .questions-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .questions-grid .question-block {
+        background-color: #FF8040;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .question-block p {
+        font-weight: bold;
+        font-size: 1.2em;
+    }
+
+    .question-block div {
+        margin: 10px 0;
+    }
+
+    label {
+        margin-left: 8px;
+    }
+
+    button {
+        display: block;
+        margin: 20px auto;
+        padding: 10px 20px;
+        background-color: #4CAF50;
+        color: white;
+        font-size: 1em;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    button:disabled {
+        background-color: #A9A9A9;
+        cursor: not-allowed;
+    }
+
+    h4 {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 1.8em;
+        font-weight: bold;
+    }
+</style>
+
+<h1>Personality Test To Find Your Type!</h1>
+<br />
+<h3>Fun way to find your type, based on your taste in music, movies, colours, games, and books</h3>
+
+<div class="questions-grid">
+    @foreach (var question in questions)
+    {
+        <div class="question-block">
+            <p>@question.Text</p>
+            @foreach (var option in question.Options)
+            {
+                <div>
+                    <input type="radio" name="question_@question.Id" value="@option" @onclick="() => UpdateSelectedOption(question, option)" />
+                    <label>@option</label>
+                </div>
+            }
+        </div>
+    }
+</div>
+@* submit button *@
+<button @onclick="SubmitResponses" disabled="@(!AllQuestionsAnswered)">
+    Submit Responses
+</button>
+
+
+
+@if (!string.IsNullOrEmpty(result))
+{
+    <h4>Your Personality Type: @result</h4>
+}
+
+@code {
+    //list to hold questions
+    private List<Questions> questions;
+    // string variable to hold the value of result
+    private string result;
+    // list to hold personality types 
+    private List<string> personalityTypes = new List<string>
+{
+    "INTJ - Mastermind: Strategic, independent, visionary. Always thinking ahead and plotting the future!",
+    "INTP - Innovator: Curious, analytical, loves solving problems. Always asking 'Why?' and finding new solutions!",
+    "ENTJ - Leader: Assertive, decisive, goal-driven. Natural-born leaders who make things happen!",
+    "ENTP - Challenger: Witty, creative, loves a good debate. Always ready to argue or inspire new ideas!",
+    "INFJ - Idealist: Compassionate, insightful, deeply caring. Dedicated to making the world a better place!",
+    "INFP - Dreamer: Empathetic, imaginative, peace-loving. A quiet soul with big dreams and a heart of gold!",
+    "ENFJ - Charismatic: Inspiring, supportive, empathetic. A natural leader who brings people together!",
+    "ENFP - Free Spirit: Energetic, optimistic, loves new experiences. Always on the hunt for adventure and new ideas!",
+    "ISTJ - Responsible: Detail-oriented, reliable, organized. The pillar of order and structure!",
+    "ISFJ - Protector: Loyal, caring, practical. The quiet guardian who ensures everyone is safe and sound!",
+    "ESTJ - Organizer: Efficient, practical, dependable. Takes charge and gets things done with precision!",
+    "ESFJ - Caregiver: Warm, sociable, helpful. The heart of any group, always there to support others!",
+    "ISTP - Adventurer: Hands-on, practical, loves action. Always ready for a challenge or thrill!",
+    "ISFP - Artist: Creative, easygoing, spontaneous. Enjoys life's simple pleasures and expresses through art!",
+    "ESTP - Thrill-Seeker: Bold, energetic, loves excitement. Always looking for the next adrenaline rush!",
+    "ESFP - Performer: Fun-loving, spontaneous, outgoing. The life of the party, always bringing joy and laughter!"
+};
+
+    
+    // boolean variable to check if all questions have been answered yet 
+    private bool AllQuestionsAnswered => questions.All(q => !string.IsNullOrEmpty(q.SelectedOption));
+
+    protected override void OnInitialized()
+    {
+        questions = new List<Questions>
+        {
+            new Questions { Id = 1, Text = "What genre you'd prefer in music?", Options = new List<string> { "Alt-Rock", "Metal", "Soft Rock", "Country", "Indie" } },
+            new Questions { Id = 2, Text = "What kind of clothing you usually prefer?", Options = new List<string> { "All Black", "Crop tees with pjs", "White tights with cute frock", "Only pink", "Whatever's in my wardrobe!" } },
+            new Questions { Id = 3, Text = "What's your favorite movie?", Options = new List<string> { "Avengers: Age of Ultron", "The Grand Budapest Hotel", "Dictator", "Three Body Problem", "The Lobster", "Whiplash" } },
+            new Questions { Id = 4, Text = "What's your favorite game?", Options = new List<string> { "Elden Ring", "Cyberpunk 2077", "GTA-6", "SEKIRO", "God of War: Ragnarok", "Pac-Man" } },
+            new Questions { Id = 5, Text = "What book do you love reading?", Options = new List<string> { "Neuromancer", "Frankenstein", "Snow Crash", "Harry Potter Series", "Diary of a Wimpy Kid", "Goosebumps", "No One Can Defeat Me", "The Almanac of Naval Ravikant" } }
+        };
+
+        result = string.Empty;
+    }
+
+    // function for submit button
+    private void SubmitResponses()
+    {
+        // generates a result randomly :)
+        var random = new Random();
+        result = personalityTypes[random.Next(personalityTypes.Count)];
+ 
+        StateHasChanged();
+    }
+
+    
+    // method to update the option selected for the questions
+    private void UpdateSelectedOption(Questions question, string option)
+    {
+        question.SelectedOption = option;
+        StateHasChanged();
+    }
+}
